@@ -40,7 +40,6 @@ let gameState = {
     winner: null,
     moves: []
 };
-
 // Function to broadcast clear move history message
 const broadcastClearMoveHistory = () => {
     const clearMessage = JSON.stringify({ type: 'clearMoveHistory' });
@@ -88,8 +87,12 @@ const checkForWinner = () => {
 
     if (!playerAHasCharacters) {
         gameState.winner = 'B';
+        ws.send(JSON.stringify({ type: 'reset' }));
+
     } else if (!playerBHasCharacters) {
         gameState.winner = 'A';
+        ws.send(JSON.stringify({ type: 'reset' }));
+
     }
 };
 
@@ -197,6 +200,7 @@ wss.on('connection', (ws) => {
             // Handle game restart request
             console.log("restart");
             resetGameState();
+            broadcastClearMoveHistory(); 
             console.log("broadcast");
             broadcastGameState();
         }

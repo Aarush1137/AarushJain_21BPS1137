@@ -10,8 +10,9 @@ const playerBSubmitButton = document.getElementById('player-b-submit');
 const playerAControls = document.getElementById('player-a-controls');
 const playerBControls = document.getElementById('player-b-controls');
 const gameStatus = document.getElementById('game-status'); // New element to display game status
+const winner = document.getElementById('winner'); // New element to display game status
 let historyDiv = document.getElementById('move-history');
-let moves = [];
+var moves = [];
 
 // Initialize the game board
 const initializeBoard = (state) => {
@@ -59,13 +60,16 @@ const displayError = (message) => {
 
 // Display the winner
 const displayWinner = (winner) => {
+    console.log("dgcgshcj");
+    winner.style.display="block";
+    winner.innerHTML=`Game Over! Player ${winner} wins!`;
     gameStatus.textContent = `Game Over! Player ${winner} wins!`;
 };
 
 // Handle incoming messages from the server
 ws.onmessage = (event) => {
     const message = JSON.parse(event.data);
-    if (message.type == 'endGame') {
+    if (message.type == 'reset') {
         console.log("winnrr");
         displayWinner(message.winner);
         console.log("timeout");
@@ -73,13 +77,17 @@ ws.onmessage = (event) => {
             ws.send(JSON.stringify({ type: 'restart' }));
         }, 1); // 10 seconds delay before restarting
     }
-    if (message.type === 'state') {
+    if (message.type === 'clearMoveHistory') {
+        historyDiv.innerHTML = "";
+        localStorage.removeItem('moveHistory'); // Remove move history from local storage
+    } else if (message.type === 'state') {
         initializeBoard(message.state);
         togglePlayerControls(message.state.turn);
     } else if (message.type === 'error') {
-        displayError("message.message");
+        displayError(message.message);
     }
-};
+    }
+;
 
 // Send the move command to the server
 const sendMove = (command) => {
@@ -138,16 +146,17 @@ playerBMoveInput.addEventListener('keydown', (event) => {
 // Event listener for End Game button
 const endGameButton = document.getElementById('end-game');
 endGameButton.addEventListener('click', () => {
-    console.log("timeout");
-    moves = [];
+    console.log("End Game clicked");
+    moves.length = 0;
     historyDiv.innerHTML = "";
-    console.log("timeout");
+    localStorage.removeItem('moveHistory'); // Remove move history from local storage
     ws.send(JSON.stringify({ type: 'endGame' }));
-    console.log("timeout");
 });
+
 
 // Function to reset the game state
 function resetGameState() {
+    moves.length=0;
     gamestate = {
         grid:  [
             ['A-P1', 'A-P2', 'A-H1', 'A-H2', 'A-P3'],
@@ -181,11 +190,13 @@ function checkForTie() {
 function checkForWinner() {
     const playerAHasCharacters = gamestate.grid.flat().some(cell => cell && cell.startsWith('A'));
     const playerBHasCharacters = gamestate.grid.flat().some(cell => cell && cell.startsWith('B'));
-
+    
     if (!playerAHasCharacters) {
         gamestate.winner = 'B';
+        moves.length=0;
     } else if (!playerBHasCharacters) {
         gamestate.winner = 'A';
+        moves.length=0;
     } else if (checkForTie()) {
         console.log('The game is a tie!');
     }
@@ -203,6 +214,7 @@ const saveMoveHistory = () => {
 const loadMoveHistory = () => {
     const historyDiv = document.getElementById('move-history');
     const moves = JSON.parse(localStorage.getItem('moveHistory')) || [];
+    if (moves.length === 0) return; // Do not load if move history is empty
     moves.forEach(move => {
         const moveParagraph = document.createElement('p');
         moveParagraph.textContent = move;
@@ -212,6 +224,7 @@ const loadMoveHistory = () => {
 
 // Call loadMoveHistory when the page loads
 window.addEventListener('load', loadMoveHistory);
+
 
 // Convert direction codes to descriptive text
 const getMoveDescription = (direction) => {
