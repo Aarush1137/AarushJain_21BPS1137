@@ -17,14 +17,14 @@
             <div class="question">?</div>
             <div class="popup" style = "z-index: 2;">
                 <div id="rules-container" style="flex: 1;">
-                    <!-- <h3 style="color: rgb(126, 33, 145);">To begin playing, enter Piece_name:Direction (e.g., P1:F) in the provided text box.</h3> -->
+                    <!-- <h3 style="color: rgb(126, 33, 145);">To begin playing, enter Piece_name:Direction (e.g., P1:FW) in the provided text box.</h3> -->
                     <h2>Rules</h2>
                     <div id="pawn-rule">
                         <h3>Pawn (P1, P2, P3)</h3>
                         <ul>
                             <li>L (left)</li>
                             <li>R (right)</li>
-                            <li>F (forward)</li>
+                            <li>FW (forward)</li>
                             <li>B (backward)</li>
                         </ul>
                     </div>
@@ -33,7 +33,7 @@
                         <ul>
                             <li>L (left)</li>
                             <li>R (right)</li>
-                            <li>F (forward)</li>
+                            <li>FW (forward)</li>
                             <li>B (backward)</li>
                         </ul>
                     </div>
@@ -55,19 +55,23 @@
             <div id="game-board"></div>
             <div id="controls">
                 <div id="player-a-controls">
-                    <input type="text" id="player-a-move" placeholder="A move (e.g., P1:F)">
+                    <input type="text" id="player-a-move" placeholder="A move (e.g., P1:FW)">
                     <button id="player-a-submit">Submit Move</button>
+                    <button id="end-game">End Game</button> <!-- Added End Game button -->
                 </div>
                 <div id="player-b-controls" style="display: none;">
                     <input type="text" id="player-b-move" placeholder="B move (e.g., P1:L)">
                     <button id="player-b-submit">Submit Move</button>
+                    <button id="end-game">End Game</button> <!-- Added End Game button -->
                 </div>
             </div>
+            
             <!-- Game Status and Move History within Game Container -->
             <div id="game-status"></div>
-            <div id="move-history" class="move-history">
-                <h2>Move History</h2>
-            </div>
+            <div id="move-history-container">
+                <h3 id="move-history-title">Move History</h3>
+                <div id="move-history"></div>
+            </div>            
         </div>
     </div>
     <script src="client.js"></script>
