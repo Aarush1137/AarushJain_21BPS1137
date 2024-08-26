@@ -1,4 +1,7 @@
+// WebSocket connection
 const ws = new WebSocket('ws://localhost:8081');
+
+// DOM elements
 const gameBoard = document.getElementById('game-board');
 const playerAMoveInput = document.getElementById('player-a-move');
 const playerBMoveInput = document.getElementById('player-b-move');
@@ -7,6 +10,8 @@ const playerBSubmitButton = document.getElementById('player-b-submit');
 const playerAControls = document.getElementById('player-a-controls');
 const playerBControls = document.getElementById('player-b-controls');
 const gameStatus = document.getElementById('game-status'); // New element to display game status
+let historyDiv = document.getElementById('move-history');
+let moves = [];
 
 // Initialize the game board
 const initializeBoard = (state) => {
@@ -27,22 +32,13 @@ const initializeBoard = (state) => {
     updateGameStatus(state); // Update the status after initializing the board
 };
 
-// Handle incoming messages from the server
-ws.onmessage = (event) => {
-    const message = JSON.parse(event.data);
-    if (message.type === 'state') {
-        initializeBoard(message.state);
-        togglePlayerControls(message.state.turn);
-    } else if (message.type === 'error') {
-        displayError(message.message);
+// Update the game status display
+const updateGameStatus = (state) => {
+    let statusText = `Current Turn: Player ${state.turn}`;
+    if (state.winner) {
+        statusText = `Game Over! Player ${state.winner} wins!`;
     }
-};
-
-// Send the move command to the server
-const sendMove = (command) => {
-    const player = document.getElementById('player-a-controls').style.display === 'block' ? 'A' : 'B';
-    const [character, direction] = command.split(':');
-    ws.send(JSON.stringify({ type: 'move', player, character, direction }));
+    gameStatus.textContent = statusText;
 };
 
 // Toggle the controls for the current player
@@ -56,18 +52,40 @@ const togglePlayerControls = (currentTurn) => {
     }
 };
 
-// Update the game status display
-const updateGameStatus = (state) => {
-    let statusText = `Current Turn: Player ${state.turn}`;
-    if (state.winner) {
-        statusText = `Game Over! Player ${state.winner} wins!`;
-    }
-    gameStatus.textContent = statusText;
-};
-
 // Display error messages to the user
 const displayError = (message) => {
     gameStatus.textContent = `Error: ${message}`;
+};
+
+// Display the winner
+const displayWinner = (winner) => {
+    gameStatus.textContent = `Game Over! Player ${winner} wins!`;
+};
+
+// Handle incoming messages from the server
+ws.onmessage = (event) => {
+    const message = JSON.parse(event.data);
+    if (message.type == 'endGame') {
+        console.log("winnrr");
+        displayWinner(message.winner);
+        console.log("timeout");
+        setTimeout(() => {
+            ws.send(JSON.stringify({ type: 'restart' }));
+        }, 1); // 10 seconds delay before restarting
+    }
+    if (message.type === 'state') {
+        initializeBoard(message.state);
+        togglePlayerControls(message.state.turn);
+    } else if (message.type === 'error') {
+        displayError("message.message");
+    }
+};
+
+// Send the move command to the server
+const sendMove = (command) => {
+    const player = document.getElementById('player-a-controls').style.display === 'block' ? 'A' : 'B';
+    const [character, direction] = command.split(':');
+    ws.send(JSON.stringify({ type: 'move', player, character, direction }));
 };
 
 // Event listeners for submitting moves
@@ -78,12 +96,12 @@ playerASubmitButton.addEventListener('click', () => {
         sendMove(command);
 
         // Add the move to the move history
-        const historyDiv = document.getElementById('move-history');
         const moveParagraph = document.createElement('p');
         moveParagraph.textContent = `A-${command}`;
         historyDiv.appendChild(moveParagraph);
 
         playerAMoveInput.value = '';
+        saveMoveHistory(); // Save move history to local storage
     }
 });
 
@@ -94,20 +112,111 @@ playerBSubmitButton.addEventListener('click', () => {
         sendMove(command);
 
         // Add the move to the move history
-        const historyDiv = document.getElementById('move-history');
         const moveParagraph = document.createElement('p');
         moveParagraph.textContent = `B-${command}`;
         historyDiv.appendChild(moveParagraph);
 
         playerBMoveInput.value = '';
+        saveMoveHistory(); // Save move history to local storage
     }
 });
 
+// Event listener for pressing Enter key in Player A input
+playerAMoveInput.addEventListener('keydown', (event) => {
+    if (event.keyCode === 13) { // 13 is the key code for Enter
+        playerASubmitButton.click();
+    }
+});
+
+// Event listener for pressing Enter key in Player B input
+playerBMoveInput.addEventListener('keydown', (event) => {
+    if (event.keyCode === 13) { // 13 is the key code for Enter
+        playerBSubmitButton.click();
+    }
+});
+
+// Event listener for End Game button
+const endGameButton = document.getElementById('end-game');
+endGameButton.addEventListener('click', () => {
+    console.log("timeout");
+    moves = [];
+    historyDiv.innerHTML = "";
+    console.log("timeout");
+    ws.send(JSON.stringify({ type: 'endGame' }));
+    console.log("timeout");
+});
+
+// Function to reset the game state
+function resetGameState() {
+    gamestate = {
+        grid:  [
+            ['A-P1', 'A-P2', 'A-H1', 'A-H2', 'A-P3'],
+            [null, null, null, null, null],
+            [null, null, null, null, null],
+            [null, null, null, null, null],
+            ['B-P1', 'B-P2', 'B-H1', 'B-H2', 'B-P3']
+        ],
+        turn: 'A',
+        winner: null,
+        moves: []
+    };
+}
+
+// Call this function when a new game starts
+resetGameState();
+
+// Function to check for a tie
+function checkForTie() {
+    const playerAPieces = gamestate.grid.flat().filter(cell => cell && cell.startsWith('A')).length;
+    const playerBPieces = gamestate.grid.flat().filter(cell => cell && cell.startsWith('B')).length;
+
+    if (playerAPieces === playerBPieces) {
+        gamestate.winner = 'Tie';
+        return true;
+    }
+    return false;
+}
+
+// Modify the existing checkForWinner function to include the tie check
+function checkForWinner() {
+    const playerAHasCharacters = gamestate.grid.flat().some(cell => cell && cell.startsWith('A'));
+    const playerBHasCharacters = gamestate.grid.flat().some(cell => cell && cell.startsWith('B'));
+
+    if (!playerAHasCharacters) {
+        gamestate.winner = 'B';
+    } else if (!playerBHasCharacters) {
+        gamestate.winner = 'A';
+    } else if (checkForTie()) {
+        console.log('The game is a tie!');
+    }
+}
+
+// Call checkForWinner after each move
+
+// Function to save move history to local storage
+const saveMoveHistory = () => {
+    historyDiv.querySelectorAll('p').forEach(p => moves.push(p.textContent));
+    localStorage.setItem('moveHistory', JSON.stringify(moves));
+};
+
+// Function to load move history from local storage
+const loadMoveHistory = () => {
+    const historyDiv = document.getElementById('move-history');
+    const moves = JSON.parse(localStorage.getItem('moveHistory')) || [];
+    moves.forEach(move => {
+        const moveParagraph = document.createElement('p');
+        moveParagraph.textContent = move;
+        historyDiv.appendChild(moveParagraph); // Append the move
+    });
+};
+
+// Call loadMoveHistory when the page loads
+window.addEventListener('load', loadMoveHistory);
 
 // Convert direction codes to descriptive text
 const getMoveDescription = (direction) => {
     switch (direction) {
-        case 'F': return ' :F';
+        case 'FW': return ' :FW';
         case 'B': return ' :B';
         case 'L': return ' :L';
         case 'R': return ' :R';

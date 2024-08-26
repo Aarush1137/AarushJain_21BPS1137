@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
 });
 
 // Initial game state
-let initialGameState = {
+const initialGameState = {
     grid: [
         ['A-P1', 'A-P2', 'A-H1', 'A-H2', 'A-P3'],
         [null, null, null, null, null],
@@ -28,11 +28,46 @@ let initialGameState = {
     moves: []
 };
 
-let gameState = { ...initialGameState };
+let gameState = {
+    grid: [
+        ['A-P1', 'A-P2', 'A-H1', 'A-H2', 'A-P3'],
+        [null, null, null, null, null],
+        [null, null, null, null, null],
+        [null, null, null, null, null],
+        ['B-P1', 'B-P2', 'B-H1', 'B-H2', 'B-P3']
+    ],
+    turn: 'A',
+    winner: null,
+    moves: []
+};
+
+// Function to broadcast clear move history message
+const broadcastClearMoveHistory = () => {
+    const clearMessage = JSON.stringify({ type: 'clearMoveHistory' });
+    wss.clients.forEach(client => {
+        if (client.readyState === WebSocket.OPEN) {
+            client.send(clearMessage);
+        }
+    });
+    console.log('Broadcasted clear move history message');
+};
 
 // Function to reset the game state
 const resetGameState = () => {
-    gameState = { ...initialGameState };
+    gameState = {
+        grid: [
+            ['A-P1', 'A-P2', 'A-H1', 'A-H2', 'A-P3'],
+            [null, null, null, null, null],
+            [null, null, null, null, null],
+            [null, null, null, null, null],
+            ['B-P1', 'B-P2', 'B-H1', 'B-H2', 'B-P3']
+        ],
+        turn: 'A',
+        winner: null,
+        moves: []
+    };
+    broadcastGameState();
+    broadcastClearMoveHistory(); // Add this line to broadcast the clear move history message
 };
 
 // Broadcast the game state to all connected clients
@@ -62,10 +97,10 @@ const checkForWinner = () => {
 wss.on('connection', (ws) => {
     console.log('Client connected');
     ws.send(JSON.stringify({ type: 'state', state: gameState }));
-
+    ws.send(JSON.stringify({ type: 'clearMoveHistory' })); // Add this line to clear move history on connection
     ws.on('message', (message) => {
-        console.log('Received message:', message);
         const data = JSON.parse(message);
+        console.log('Received message:', data);
 
         if (data.type === 'move') {
             const { player, character, direction } = data;
@@ -95,7 +130,7 @@ wss.on('connection', (ws) => {
                         switch (direction) {
                             case 'L': newCol = Math.max(0, col - 1); break;
                             case 'R': newCol = Math.min(4, col + 1); break;
-                            case 'F': newRow = gameState.turn === 'A' ? Math.min(4, row + 1) : Math.max(0, row - 1); break;
+                            case 'FW': newRow = gameState.turn === 'A' ? Math.min(4, row + 1) : Math.max(0, row - 1); break;
                             case 'B': newRow = gameState.turn === 'A' ? Math.max(0, row - 1) : Math.min(4, row + 1); break;
                         }
                         break;
@@ -104,7 +139,7 @@ wss.on('connection', (ws) => {
                         switch (direction) {
                             case 'L': newRow = row; newCol = Math.max(0, col - 2); break;
                             case 'R': newRow = row; newCol = Math.min(4, col + 2); break;
-                            case 'F': newRow = gameState.turn === 'A' ? Math.min(4, row + 2) : Math.max(0, row - 2); newCol = col; break;
+                            case 'FW': newRow = gameState.turn === 'A' ? Math.min(4, row + 2) : Math.max(0, row - 2); newCol = col; break;
                             case 'B': newRow = gameState.turn === 'A' ? Math.max(0, row - 2) : Math.min(4, row + 2); newCol = col; break;
                         }
                         break;
@@ -122,9 +157,9 @@ wss.on('connection', (ws) => {
                 if (gameState.grid[newRow][newCol] && gameState.grid[newRow][newCol].startsWith(player)) {
                     ws.send(JSON.stringify({
                         type: 'error',
-                        message: `Invalid Move :Cannot move to cell occupied by your own piece! Cell value: ${gameState.grid[newRow][newCol]}`
+                        message: `Invalid Move: Cannot move to cell occupied by your own piece! Cell value: ${gameState.grid[newRow][newCol]}`
                     }));
-                    console.log(`Invalid Move :Cannot move to cell occupied by your own piece! Cell value: ${gameState.grid[newRow][newCol]}`);
+                    console.log(`Invalid Move: Cannot move to cell occupied by your own piece! Cell value: ${gameState.grid[newRow][newCol]}`);
                     return;
                 }
 
@@ -158,9 +193,11 @@ wss.on('connection', (ws) => {
                 ws.send(JSON.stringify({ type: 'error', message: 'Invalid move!' }));
                 console.log('Error:', error.message);
             }
-        } else if (data.type === 'restart') {
+        } else if (data.type == 'endGame') {
             // Handle game restart request
+            console.log("restart");
             resetGameState();
+            console.log("broadcast");
             broadcastGameState();
         }
     });

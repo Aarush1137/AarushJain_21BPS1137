@@ -123,10 +123,12 @@ button:hover {
 
 #move-history {
     height: 200px;
-    width: 1000px;
+    width: 75vw;
     border: 1px solid #333;
     padding: 10px;
     margin-top: 20px;
+    justify-content: center;
+    /* text-align: center; */
     background-color: #333;
 }
 
