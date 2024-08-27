@@ -37,7 +37,8 @@ Setup and Run Instructions
 1. Clone the Repository: git clone https://github.com/Aarush1137/AarushJain_21BPS1137  
 2. Navigate to the Project Directory: cd <chess-game>  
 3. Install Dependencies: npm install  
-4. Start the Server: node server.js  
+4. Navigate to the Server Directory: cd <server>  
+5. Start the Server: node server.js  
 The server will start and listen on port 8080 by default. You can access it at http://localhost:8081.
 Client Setup 🖥️
 Frontend Files:
