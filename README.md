@@ -69,7 +69,7 @@ The server will start and listen on port 8080 by default. You can access it at [
 
 ### Client Setup 🖥️
 
-The frontend files (HTML, CSS, JavaScript) are located in the `server/Client` directory.
+The frontend files (HTML, CSS, JavaScript) are located in the `Client` directory.
 
 To access the game:
 
