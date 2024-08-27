@@ -1,5 +1,5 @@
 
-# 5x5 Board Game
+# 5x5 Board Game - Run locally 
 
 This turn-based 5x5 board game was developed as part of the HitWicket Software Engineer assignment. Two players compete using 5 pieces each: 3 pawns (P1, P2, P3), 1 Hero1 (H1), and 1 Hero2 (H2).
 
