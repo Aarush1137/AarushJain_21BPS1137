@@ -38,6 +38,15 @@ This turn-based 5x5 board game was developed as part of the HitWicket Software E
 - **Backend:** Node.js with Express
 - **Communication:** WebSockets
 
+## Screenshots 📸
+
+### Game Board
+![Game Board](p2.png)
+
+### Player's Move
+![Player's Move](p1.png)
+
+
 ## Setup and Run Instructions
 
 ### Server Setup 🚀
