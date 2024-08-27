@@ -1,5 +1,8 @@
-// WebSocket connection
-const ws = new WebSocket('ws://localhost:8081');
+// Determine the WebSocket URL based on the current location
+const wsProtocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+const wsHost = window.location.host;
+const ws = new WebSocket(`${wsProtocol}//${wsHost}`);
+
 
 // DOM elements
 const gameBoard = document.getElementById('game-board');
