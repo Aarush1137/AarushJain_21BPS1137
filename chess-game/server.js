@@ -1,20 +1,22 @@
-const WebSocket = require('ws');
-const http = require('http');
 const express = require('express');
+const http = require('http');
 const path = require('path');
-const socketIo = require('socket.io'); // Correctly declare socketIo
+const socketIo = require('socket.io');
+const WebSocket = require('ws');
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server); // Initialize socketIo correctly
+const io = socketIo(server);
 const wss = new WebSocket.Server({ server });
 
-app.use(express.static(path.join(__dirname, '..', 'Client')));
+// Serve static files from the Client directory
+app.use(express.static(path.join(__dirname,'Client')));
 
 // Default route
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '..', 'Client', 'index.html'));
+    res.sendFile(path.join(__dirname,'Client', 'index.html'));
 });
+
 
 io.on('connection', (socket) => {
     console.log('New client connected');
