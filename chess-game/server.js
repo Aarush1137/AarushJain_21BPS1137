@@ -50,7 +50,7 @@ io.on('connection', (socket) => {
     });
 });
 
-server.listen(8081, () => console.log('Server is listening on port 8081')); // Use only one server.listen call
+server.listen(8081, () => console.log('Server is listening on port 8081: http://localhost:8081')); // Use only one server.listen call
 
 // Initial game state
 const initialGameState = {
