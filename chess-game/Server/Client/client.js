@@ -13,7 +13,10 @@ const gameStatus = document.getElementById('game-status'); // New element to dis
 const winner = document.getElementById('winner'); // New element to display game status
 let historyDiv = document.getElementById('move-history');
 var moves = [];
-
+// Timer variables
+let timerInterval;
+let timerElement = document.getElementById('timer');
+let timeLeft = 300; // 5 minutes in seconds
 // Initialize the game board
 const initializeBoard = (state) => {
     gameBoard.innerHTML = '';
@@ -32,6 +35,39 @@ const initializeBoard = (state) => {
     }
     updateGameStatus(state); // Update the status after initializing the board
 };
+
+// Function to start the timer
+const startTimer = () => {
+    clearInterval(timerInterval);
+    timeLeft = 300; // Reset to 5 minutes
+    timerElement.textContent = formatTime(timeLeft);
+    timerInterval = setInterval(() => {
+        timeLeft--;
+        timerElement.textContent = formatTime(timeLeft);
+        if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            alert('Time is up! The game will reset.');
+            ws.send(JSON.stringify({ type: 'endGame' }));
+        }
+    }, 1000);
+};
+
+
+// Function to format time in mm:ss
+const formatTime = (seconds) => {
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${minutes}:${secs < 10 ? '0' : ''}${secs}`;
+};
+
+// Function to stop the timer
+const stopTimer = () => {
+    clearInterval(timerInterval);
+};
+
+// Call startTimer when the page loads
+window.addEventListener('load', startTimer);
+
 
 // Update the game status display
 const updateGameStatus = (state) => {
@@ -76,6 +112,7 @@ ws.onmessage = (event) => {
         setTimeout(() => {
             ws.send(JSON.stringify({ type: 'restart' }));
         }, 1); // 10 seconds delay before restarting
+        stopTimer();
     }
     if (message.type === 'clearMoveHistory') {
         historyDiv.innerHTML = "";
@@ -86,8 +123,10 @@ ws.onmessage = (event) => {
     } else if (message.type === 'error') {
         displayError(message.message);
     }
+    else if (message.type === 'resetTimer') {
+        startTimer(); // Start the timer when the game resets
     }
-;
+};
 
 // Send the move command to the server
 const sendMove = (command) => {
@@ -151,6 +190,7 @@ endGameButton.addEventListener('click', () => {
     historyDiv.innerHTML = "";
     localStorage.removeItem('moveHistory'); // Remove move history from local storage
     ws.send(JSON.stringify({ type: 'endGame' }));
+    startTimer();
 });
 
 
@@ -169,6 +209,7 @@ function resetGameState() {
         winner: null,
         moves: []
     };
+    startTimer();
 }
 
 // Call this function when a new game starts

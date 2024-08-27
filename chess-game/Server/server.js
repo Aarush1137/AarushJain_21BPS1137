@@ -2,9 +2,11 @@ const WebSocket = require('ws');
 const http = require('http');
 const express = require('express');
 const path = require('path');
+const socketIo = require('socket.io'); // Correctly declare socketIo
 
 const app = express();
 const server = http.createServer(app);
+const io = socketIo(server); // Initialize socketIo correctly
 const wss = new WebSocket.Server({ server });
 
 app.use(express.static('Client'));
@@ -13,6 +15,40 @@ app.use(express.static('Client'));
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'Client', 'index.html'));
 });
+
+io.on('connection', (socket) => {
+    console.log('New client connected');
+
+    socket.on('disconnect', () => {
+        console.log('Client disconnected');
+    });
+
+    socket.on('resetGameState', () => {
+        gameState = {};
+        moveHistory = [];
+        io.sockets.emit('gameState', gameState);
+        io.sockets.emit('moveHistory', moveHistory);
+        io.sockets.emit('resetTimer'); // Emit reset timer event
+    });
+
+    socket.on('makeMove', (move) => {
+        // Update game state with the new move
+        // gameState = updateGameState(gameState, move);
+        moveHistory.push(move);
+        io.sockets.emit('gameState', gameState);
+        io.sockets.emit('moveHistory', moveHistory);
+    });
+
+    socket.on('endGame', () => {
+        gameState = {};
+        moveHistory = [];
+        io.sockets.emit('gameState', gameState);
+        io.sockets.emit('moveHistory', moveHistory);
+        io.sockets.emit('resetTimer'); // Emit reset timer event
+    });
+});
+
+server.listen(8081, () => console.log('Server is listening on port 8081')); // Use only one server.listen call
 
 // Initial game state
 const initialGameState = {
@@ -40,6 +76,7 @@ let gameState = {
     winner: null,
     moves: []
 };
+
 // Function to broadcast clear move history message
 const broadcastClearMoveHistory = () => {
     const clearMessage = JSON.stringify({ type: 'clearMoveHistory' });
@@ -247,7 +284,3 @@ const removeOpponentCharactersInPath = (row1, col1, row2, col2, character) => {
         currentCol += directionCol;
     }
 };
-
-server.listen(8081, () => {
-    console.log('Server is listening on port 8081');
-});

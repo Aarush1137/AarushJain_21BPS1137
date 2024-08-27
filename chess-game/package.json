@@ -11,7 +11,9 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.19.2",
+    "react-countdown": "^2.3.6",
     "require": "^0.4.4",
+    "socket.io": "^4.7.5",
     "ws": "^8.18.0"
   },
   "description": ""
