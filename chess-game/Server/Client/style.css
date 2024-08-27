@@ -12,6 +12,7 @@ body {
     position: relative; /* Add this to ensure the timer is positioned relative to the body */
 
 }
+
 #timer {
   position: absolute;
   top: 10px;
@@ -244,4 +245,20 @@ button:hover {
     border: none; /* Remove border */
     max-height: 600px;
   }
-  
+  .header {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-family: 'Gotham', sans-serif;
+    font-size: 14px;
+}
+
+.header a {
+    color: #333;
+    text-decoration: none;
+    font-weight: 700;
+}
+
+.header a:hover {
+    text-decoration: underline;
+}
