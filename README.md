@@ -38,6 +38,15 @@ This turn-based 5x5 board game was developed as part of the HitWicket Software E
 - **Backend:** Node.js with Express
 - **Communication:** WebSockets
 
+## Screenshots 📸
+
+### Game Board
+![Game Board](p2.png)
+
+### Player's Move
+![Player's Move](p1.png)
+
+
 ## Setup and Run Instructions
 
 ### Server Setup 🚀
@@ -60,7 +69,7 @@ The server will start and listen on port 8080 by default. You can access it at [
 
 ### Client Setup 🖥️
 
-The frontend files (HTML, CSS, JavaScript) are located in the `server/Client` directory.
+The frontend files (HTML, CSS, JavaScript) are located in the `Client` directory.
 
 To access the game:
 
