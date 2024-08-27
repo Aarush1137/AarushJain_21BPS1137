@@ -9,11 +9,11 @@ const server = http.createServer(app);
 const io = socketIo(server); // Initialize socketIo correctly
 const wss = new WebSocket.Server({ server });
 
-app.use(express.static('Client'));
+app.use(express.static(path.join(__dirname, '..', 'Client')));
 
 // Default route
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'Client', 'index.html'));
+    res.sendFile(path.join(__dirname, '..', 'Client', 'index.html'));
 });
 
 io.on('connection', (socket) => {
