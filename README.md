@@ -51,13 +51,10 @@ This turn-based 5x5 board game was developed as part of the HitWicket Software E
    
 3. **Install Dependencies:**
    ```bash
-   npm install
-4. **Navigate to the Server Directory:**
+   npm run build
+4. **Start the Server:**
    ```bash
-   cd server
-5. **Start the Server:**
-   ```bash
-   node server.js
+   npm start
 
 The server will start and listen on port 8080 by default. You can access it at [http://localhost:8081](http://localhost:8081).
 
